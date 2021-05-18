@@ -43,5 +43,9 @@ jobs:
             yarn prettier --list-different "assets/**/*.{scss,js,es6}" ; \
           fi
 
+      - name: Prettier Ruby
+        run: |
+          yarn prettier --list-different "**/*.rb"
+
       - name: Rubocop
         run: bundle exec rubocop .
