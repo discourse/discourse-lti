@@ -232,8 +232,17 @@ class DiscourseLti::LtiOmniauthStrategy
     payload
   end
 
+  def raw_public_key
+    raw = options.platform_public_key
+    if raw.start_with?('-----BEGIN')
+      raw
+    else
+      "-----BEGIN PUBLIC KEY-----\n#{raw}\n-----END PUBLIC KEY-----"
+    end
+  end
+
   def public_key
-    @public_key ||= OpenSSL::PKey::RSA.new options.platform_public_key
+    @public_key ||= OpenSSL::PKey::RSA.new raw_public_key
   end
 
   uid { id_token_info['sub'] }

@@ -4,5 +4,5 @@ en:
     lti_authorization_endpoint: The LTI platform's Authorization Endpoint
     lti_client_id: The tool's LTI client_id
     lti_platform_issuer_id: The issuer ID for the LTI Platform. Normally a URL, including https://
-    lti_platform_public_key: The LTI Platform's public key. Include the `BEGIN PUBLIC KEY` and `END PUBLIC KEY` lines
+    lti_platform_public_key: The LTI Platform's public key
     lti_email_verified: Enable if email addresses from the Platform have been verified.
