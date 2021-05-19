@@ -3,7 +3,8 @@ plugins:
     default: false
   lti_authorization_endpoint:
     default: ""
-  lti_client_id: 
+  lti_client_ids: 
+    type: list
     default: ""
   lti_platform_issuer_id:
     default: ""
