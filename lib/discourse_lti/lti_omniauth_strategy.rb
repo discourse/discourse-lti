@@ -54,7 +54,8 @@ class DiscourseLti::LtiOmniauthStrategy
           :iss,
           :login_hint,
           :target_link_uri,
-          :lti_message_hint
+          :lti_message_hint,
+          :client_id
         )
       )
     end
