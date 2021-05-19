@@ -30,7 +30,7 @@ class ::DiscourseLti::LtiAuthenticator < Auth::ManagedAuthenticator
                         lambda { |env|
                           opts = env['omniauth.strategy'].options
                           opts.deep_merge!(
-                            client_id: SiteSetting.lti_client_id,
+                            client_ids: SiteSetting.lti_client_ids.split('|'),
                             authorize_url:
                               SiteSetting.lti_authorization_endpoint,
                             platform_issuer_id:

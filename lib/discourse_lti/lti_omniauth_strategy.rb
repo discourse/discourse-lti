@@ -19,7 +19,7 @@ class DiscourseLti::LtiOmniauthStrategy
     end
   end
 
-  option :client_id
+  option :client_ids
   option :authorize_url
   option :platform_issuer_id
   option :platform_public_key
@@ -63,6 +63,7 @@ class DiscourseLti::LtiOmniauthStrategy
     login_hint = request.params['login_hint']
     target_link_uri = request.params['target_link_uri']
     lti_message_hint = request.params['lti_message_hint']
+    client_id = request.params['client_id']
 
     if !(iss.present? && login_hint.present? && target_link_uri.present?)
       return(
@@ -84,6 +85,30 @@ class DiscourseLti::LtiOmniauthStrategy
       )
     end
 
+    if client_id.present? && !options.client_ids.include?(client_id)
+      # client_id is an optional parameter. If present, it must be correct
+      return(
+        fail!(
+          :invalid_client_id,
+          RuntimeError.new(
+            "Client ID does not match. Expected one of '#{options.client_ids.join(',')}', got '#{client_id}'."
+          )
+        )
+      )
+    elsif !client_id.present? && options.client_ids.size > 1
+      # We require it if multiple client_ids have been configured
+      return(
+        fail!(
+          :missing_client_id,
+          RuntimeError.new(
+            'client_id parameter not passed, and multiple allowed client_ids are configured'
+          )
+        )
+      )
+    elsif !client_id.present?
+      client_id = options.client_ids.first
+    end
+
     state = SecureRandom.hex
     nonce = SecureRandom.hex
 
@@ -96,7 +121,7 @@ class DiscourseLti::LtiOmniauthStrategy
       response_type: 'id_token',
       response_mode: 'form_post',
       prompt: 'none',
-      client_id: options.client_id,
+      client_id: client_id,
       redirect_uri: callback_url,
       login_hint: login_hint,
       state: state,
@@ -148,13 +173,13 @@ class DiscourseLti::LtiOmniauthStrategy
               StandardError.new('Nonce claim did not match the session')
       )
     elsif [*id_token_info['aud']].length > 1 &&
-          id_token_info['azp'] != options.client_id
+          !options.client_ids.include(id_token_info['azp'])
       # If the ID Token contains multiple audiences, the Tool SHOULD verify that an azp Claim is present;
       # If an azp (authorized party) Claim is present, the Tool SHOULD verify that its client_id is the Claim's value;
       return(
         fail! :azp_mismatch,
               StandardError.new(
-                "azp claim invalid. Expected #{options.client_id}, received #{id_token_info['azp']}"
+                "azp claim invalid. Expected one of #{options.client_ids.join(',')}, received #{id_token_info['azp']}"
               )
       )
     end
@@ -224,7 +249,7 @@ class DiscourseLti::LtiOmniauthStrategy
           verify_not_before: true,
           iss: options.platform_issuer_id,
           verify_iss: true,
-          aud: options.client_id,
+          aud: options.client_ids,
           verify_aud: true
         }
       )

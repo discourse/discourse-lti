@@ -23,7 +23,7 @@ describe 'LTI Plugin' do
     SiteSetting.lti_authorization_endpoint = authorize_url
     SiteSetting.lti_platform_public_key = platform_public_key.to_s
     SiteSetting.lti_platform_issuer_id = platform_issuer_id
-    SiteSetting.lti_client_id = tool_client_id
+    SiteSetting.lti_client_ids = tool_client_id
   end
 
   it 'shows an error if auth is started on Discourse side' do
@@ -73,6 +73,33 @@ describe 'LTI Plugin' do
         'state=',
         'nonce='
       )
+    end
+
+    it 'verifies the client_id if present' do
+      get '/auth/lti/initiate',
+          params: init_params.merge(client_id: tool_client_id)
+      expect(response.status).to eq(302)
+      expect(response.location).to start_with(authorize_url)
+
+      get '/auth/lti/initiate',
+          params: init_params.merge(client_id: 'incorrect_client_id')
+      expect(response.status).to eq(302)
+      expect(response.location).to include('message=invalid_client_id')
+    end
+
+    it 'requires client_id parameter if multiple are configured' do
+      SiteSetting.lti_client_ids = "#{tool_client_id}|anotherkey"
+      get '/auth/lti/initiate', params: init_params
+      expect(response.status).to eq(302)
+      expect(response.location).to include('message=missing_client_id')
+    end
+
+    it 'verifies the client_id if multiple are configured' do
+      SiteSetting.lti_client_ids = "#{tool_client_id}|anotherkey"
+      get '/auth/lti/initiate',
+          params: init_params.merge(client_id: 'anotherkey')
+      expect(response.status).to eq(302)
+      expect(response.location).to start_with(authorize_url)
     end
   end
 
