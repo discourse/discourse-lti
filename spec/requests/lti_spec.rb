@@ -116,6 +116,17 @@ describe 'LTI Plugin' do
       expect(data['email']).to eq('email@example.com')
     end
 
+    it 'works without PEM prefix/suffix' do
+      SiteSetting.lti_platform_public_key =
+        SiteSetting.lti_platform_public_key.gsub(/^-.*-$/) { '' }.strip
+
+      post '/auth/lti/callback', params: callback_params.merge(samesite: 'true')
+      expect(response.status).to eq(302)
+      expect(response.location).to include('/t/123')
+      data = JSON.parse(cookies[:authentication_data])
+      expect(data['email']).to eq('email@example.com')
+    end
+
     it 'fails if state does not match' do
       callback_params[:state] = 'blah'
       post '/auth/lti/callback', params: callback_params.merge(samesite: 'true')
