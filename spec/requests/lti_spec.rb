@@ -24,6 +24,7 @@ describe 'LTI Plugin' do
     SiteSetting.lti_platform_public_key = platform_public_key.to_s
     SiteSetting.lti_platform_issuer_id = platform_issuer_id
     SiteSetting.lti_client_ids = tool_client_id
+    SiteSetting.lti_email_verified = true
   end
 
   it 'shows an error if auth is started on Discourse side' do
@@ -199,6 +200,32 @@ describe 'LTI Plugin' do
       expect(response.location).to include(
         '/auth/failure?message=token_invalid'
       )
+    end
+
+    context 'with invite custom field' do
+      let(:invite) { Invite.generate(Discourse.system_user) }
+      before do
+        token_data[DiscourseLti::CUSTOM_DATA_CLAIM] = {
+          DiscourseLti::DISCOURSE_INVITE_KEYS.first => invite.link
+        }
+      end
+
+      it 'redirects new users to the invite' do
+        post '/auth/lti/callback',
+             params: callback_params.merge(samesite: 'true')
+        expect(response.status).to eq(302)
+        expect(response.location).to include(invite.link)
+        data = JSON.parse(cookies[:authentication_data])
+        expect(data['email']).to eq('email@example.com')
+      end
+
+      it 'sends existing users to the launch URL' do
+        Fabricate(:user, email: 'email@example.com')
+        post '/auth/lti/callback',
+             params: callback_params.merge(samesite: 'true')
+        expect(response.status).to eq(302)
+        expect(response.location).to include('/t/123')
+      end
     end
   end
 end
