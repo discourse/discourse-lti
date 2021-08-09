@@ -227,5 +227,15 @@ describe 'LTI Plugin' do
         expect(response.location).to include('/t/123')
       end
     end
+
+    context 'when a user is already logged in' do
+      before { sign_in Fabricate(:user) }
+
+      it 'automatically goes into auth_reconnect mode' do
+        post '/auth/lti/callback', params: callback_params.merge(samesite: 'true')
+        expect(response.status).to eq(302)
+        expect(response.location).to include('/associate/')
+      end
+    end
   end
 end
