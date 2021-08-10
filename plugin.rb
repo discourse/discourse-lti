@@ -13,6 +13,8 @@ module ::DiscourseLti
   PLUGIN_NAME = 'discourse-lti'
   CUSTOM_DATA_CLAIM = 'https://purl.imsglobal.org/spec/lti/claim/custom'
   DISCOURSE_INVITE_KEYS = %w[discourse_invite_link custom_discourse_invite_link] # Coursera prefixes keys with `custom_`
+
+  class ShouldReconnect < StandardError; end
 end
 
 after_initialize do
@@ -52,6 +54,20 @@ after_initialize do
     next if !(route[:controller] == 'invites' && route[:action] == 'show')
 
     session[:destination_url] = parsed.to_s
+  end
+
+  on(:after_auth) do |authenticator, auth_result, session, cookies|
+    next if !(authenticator.name.to_sym == :lti)
+    if !auth_result.user && cookies['_t'] # User (probably) already logged in
+      raise ::DiscourseLti::ShouldReconnect.new
+    end
+  end
+
+  reloadable_patch do
+    ::Users::OmniauthCallbacksController.rescue_from(::DiscourseLti::ShouldReconnect) do
+      session[:auth_reconnect] = true
+      complete
+    end
   end
 end
 

@@ -10,9 +10,9 @@ class ::DiscourseLti::LtiAuthenticator < Auth::ManagedAuthenticator
   end
 
   def can_connect_existing_user?
-    # Impossible - LTI authentication can only be initiated
-    # by the identity provider
-    false
+    # Connection is possible, but must be initiated by the IdP.
+    # Discourse's "connect" button is hidden using javascript.
+    true
   end
 
   def enabled?
