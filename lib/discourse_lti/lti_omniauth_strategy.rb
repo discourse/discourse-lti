@@ -223,7 +223,7 @@ class DiscourseLti::LtiOmniauthStrategy
             #{form_fields}
             <noscript>
               <input type="submit" value="Continue"/>
-            </noscript>  
+            </noscript>
           </form>
         </body>
       </html>
