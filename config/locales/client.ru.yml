@@ -5,3 +5,8 @@
 # https://translate.discourse.org/
 
 ru:
+  js:
+    login:
+      lti:
+        name: "LTI"
+        title: "с помощью LTI"
