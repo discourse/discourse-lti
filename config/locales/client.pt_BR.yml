@@ -5,3 +5,8 @@
 # https://translate.discourse.org/
 
 pt_BR:
+  js:
+    login:
+      lti:
+        name: "LTI"
+        title: "com LTI"

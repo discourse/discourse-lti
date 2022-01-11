@@ -5,3 +5,8 @@
 # https://translate.discourse.org/
 
 es:
+  js:
+    login:
+      lti:
+        name: "LTI"
+        title: "con LTI"
