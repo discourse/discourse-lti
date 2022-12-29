@@ -2,7 +2,7 @@
 
 class ::DiscourseLti::LtiAuthenticator < Auth::ManagedAuthenticator
   def name
-    'lti'
+    "lti"
   end
 
   def can_revoke?
@@ -28,15 +28,12 @@ class ::DiscourseLti::LtiAuthenticator < Auth::ManagedAuthenticator
                       name: :lti,
                       setup:
                         lambda { |env|
-                          opts = env['omniauth.strategy'].options
+                          opts = env["omniauth.strategy"].options
                           opts.deep_merge!(
-                            client_ids: SiteSetting.lti_client_ids.split('|'),
-                            authorize_url:
-                              SiteSetting.lti_authorization_endpoint,
-                            platform_issuer_id:
-                              SiteSetting.lti_platform_issuer_id,
-                            platform_public_key:
-                              SiteSetting.lti_platform_public_key
+                            client_ids: SiteSetting.lti_client_ids.split("|"),
+                            authorize_url: SiteSetting.lti_authorization_endpoint,
+                            platform_issuer_id: SiteSetting.lti_platform_issuer_id,
+                            platform_public_key: SiteSetting.lti_platform_public_key,
                           )
                         }
   end
