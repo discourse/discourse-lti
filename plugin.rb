@@ -10,11 +10,12 @@
 enabled_site_setting :lti_enabled
 
 module ::DiscourseLti
-  PLUGIN_NAME = 'discourse-lti'
-  CUSTOM_DATA_CLAIM = 'https://purl.imsglobal.org/spec/lti/claim/custom'
+  PLUGIN_NAME = "discourse-lti"
+  CUSTOM_DATA_CLAIM = "https://purl.imsglobal.org/spec/lti/claim/custom"
   DISCOURSE_INVITE_KEYS = %w[discourse_invite_link custom_discourse_invite_link] # Coursera prefixes keys with `custom_`
 
-  class ShouldReconnect < StandardError; end
+  class ShouldReconnect < StandardError
+  end
 end
 
 after_initialize do
@@ -27,18 +28,16 @@ after_initialize do
 
     uaa =
       UserAssociatedAccount.find_by(
-        provider_name: 'lti',
-        provider_uid: auth_result.extra_data[:uid]
+        provider_name: "lti",
+        provider_uid: auth_result.extra_data[:uid],
       )
     next if uaa.nil?
 
-    custom_data = uaa.extra.dig('raw_info', ::DiscourseLti::CUSTOM_DATA_CLAIM)
+    custom_data = uaa.extra.dig("raw_info", ::DiscourseLti::CUSTOM_DATA_CLAIM)
     next if custom_data.nil?
 
     invite = nil
-    ::DiscourseLti::DISCOURSE_INVITE_KEYS.each do |k|
-      break if invite = custom_data[k]
-    end
+    ::DiscourseLti::DISCOURSE_INVITE_KEYS.each { |k| break if invite = custom_data[k] }
     next if invite.nil?
 
     parsed =
@@ -51,14 +50,14 @@ after_initialize do
     next if parsed.host && parsed.host != Discourse.current_hostname
 
     route = Discourse.route_for(parsed.path)
-    next if !(route[:controller] == 'invites' && route[:action] == 'show')
+    next if !(route[:controller] == "invites" && route[:action] == "show")
 
     session[:destination_url] = parsed.to_s
   end
 
   on(:after_auth) do |authenticator, auth_result, session, cookies|
     next if !(authenticator.name.to_sym == :lti)
-    if !auth_result.user && cookies['_t'] # User (probably) already logged in
+    if !auth_result.user && cookies["_t"] # User (probably) already logged in
       raise ::DiscourseLti::ShouldReconnect.new
     end
   end
@@ -71,7 +70,7 @@ after_initialize do
   end
 end
 
-require_relative 'lib/discourse_lti/lti_omniauth_strategy'
-require_relative 'lib/discourse_lti/lti_authenticator'
+require_relative "lib/discourse_lti/lti_omniauth_strategy"
+require_relative "lib/discourse_lti/lti_authenticator"
 
 auth_provider authenticator: ::DiscourseLti::LtiAuthenticator.new

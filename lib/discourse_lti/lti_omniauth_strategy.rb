@@ -15,7 +15,7 @@ class DiscourseLti::LtiOmniauthStrategy
     end
 
     def message
-      [error, error_reason, error_uri].compact.join(' | ')
+      [error, error_reason, error_uri].compact.join(" | ")
     end
   end
 
@@ -29,16 +29,13 @@ class DiscourseLti::LtiOmniauthStrategy
   def request_phase
     fail!(
       :third_party_only,
-      StandardError.new(
-        'LTI authentication can only be initiated by the identity provider'
-      )
+      StandardError.new("LTI authentication can only be initiated by the identity provider"),
     )
   end
 
   def other_phase
     methods = %i[get post]
-    if on_initiate_path? &&
-         %i[get post].include?(request.request_method.downcase.to_sym)
+    if on_initiate_path? && %i[get post].include?(request.request_method.downcase.to_sym)
       return initiate_phase
     end
 
@@ -50,27 +47,21 @@ class DiscourseLti::LtiOmniauthStrategy
 
     if cross_site_post?
       return(
-        resubmit_as_samesite(
-          :iss,
-          :login_hint,
-          :target_link_uri,
-          :lti_message_hint,
-          :client_id
-        )
+        resubmit_as_samesite(:iss, :login_hint, :target_link_uri, :lti_message_hint, :client_id)
       )
     end
 
-    iss = request.params['iss']
-    login_hint = request.params['login_hint']
-    target_link_uri = request.params['target_link_uri']
-    lti_message_hint = request.params['lti_message_hint']
-    client_id = request.params['client_id']
+    iss = request.params["iss"]
+    login_hint = request.params["login_hint"]
+    target_link_uri = request.params["target_link_uri"]
+    lti_message_hint = request.params["lti_message_hint"]
+    client_id = request.params["client_id"]
 
     if !(iss.present? && login_hint.present? && target_link_uri.present?)
       return(
         fail! :missing_parameters,
               RuntimeError.new(
-                'Missing parameters. Requires `iss`, `login_hint` and `target_link_uri`'
+                "Missing parameters. Requires `iss`, `login_hint` and `target_link_uri`",
               )
       )
     end
@@ -80,8 +71,8 @@ class DiscourseLti::LtiOmniauthStrategy
         fail!(
           :invalid_issuer,
           RuntimeError.new(
-            "Issuer does not match. Expected '#{options.platform_issuer_id}', got '#{iss}'."
-          )
+            "Issuer does not match. Expected '#{options.platform_issuer_id}', got '#{iss}'.",
+          ),
         )
       )
     end
@@ -92,8 +83,8 @@ class DiscourseLti::LtiOmniauthStrategy
         fail!(
           :invalid_client_id,
           RuntimeError.new(
-            "Client ID does not match. Expected one of '#{options.client_ids.join(',')}', got '#{client_id}'."
-          )
+            "Client ID does not match. Expected one of '#{options.client_ids.join(",")}', got '#{client_id}'.",
+          ),
         )
       )
     elsif !client_id.present? && options.client_ids.size > 1
@@ -102,8 +93,8 @@ class DiscourseLti::LtiOmniauthStrategy
         fail!(
           :missing_client_id,
           RuntimeError.new(
-            'client_id parameter not passed, and multiple allowed client_ids are configured'
-          )
+            "client_id parameter not passed, and multiple allowed client_ids are configured",
+          ),
         )
       )
     elsif !client_id.present?
@@ -113,20 +104,20 @@ class DiscourseLti::LtiOmniauthStrategy
     state = SecureRandom.hex
     nonce = SecureRandom.hex
 
-    session['omniauth.state'] = state
-    session['omniauth.nonce'] = nonce
-    session['destination_url'] = target_link_uri
+    session["omniauth.state"] = state
+    session["omniauth.nonce"] = nonce
+    session["destination_url"] = target_link_uri
 
     params = {
-      scope: 'openid',
-      response_type: 'id_token',
-      response_mode: 'form_post',
-      prompt: 'none',
+      scope: "openid",
+      response_type: "id_token",
+      response_mode: "form_post",
+      prompt: "none",
       client_id: client_id,
       redirect_uri: callback_url,
       login_hint: login_hint,
       state: state,
-      nonce: nonce
+      nonce: nonce,
     }
 
     params[:lti_message_hint] = lti_message_hint if lti_message_hint
@@ -140,47 +131,35 @@ class DiscourseLti::LtiOmniauthStrategy
   end
 
   def callback_phase
-    if error = request.params['error']
+    if error = request.params["error"]
       return(
         fail! error,
               CallbackError.new(
-                request.params['error'],
-                request.params['error_description'],
-                request.params['error_uri']
+                request.params["error"],
+                request.params["error_description"],
+                request.params["error_uri"],
               )
       )
-    elsif request.params['state'].to_s.empty?
+    elsif request.params["state"].to_s.empty?
       return(
-        fail! :state_missing,
-              StandardError.new(
-                'State parameter was not included in the callback'
-              )
+        fail! :state_missing, StandardError.new("State parameter was not included in the callback")
       )
-    elsif request.params['id_token'].to_s.empty?
+    elsif request.params["id_token"].to_s.empty?
       return(
         fail! :id_token_missing,
-              StandardError.new(
-                'id_token parameter was not included in the callback'
-              )
+              StandardError.new("id_token parameter was not included in the callback")
       )
-    elsif request.params['state'] != session['omniauth.state']
-      return(
-        fail! :state_mismatch,
-              StandardError.new('State parameter did not match the session')
-      )
-    elsif id_token_info['nonce'] != session['omniauth.nonce']
-      return(
-        fail! :nonce_mismatch,
-              StandardError.new('Nonce claim did not match the session')
-      )
-    elsif [*id_token_info['aud']].length > 1 &&
-          !options.client_ids.include(id_token_info['azp'])
+    elsif request.params["state"] != session["omniauth.state"]
+      return(fail! :state_mismatch, StandardError.new("State parameter did not match the session"))
+    elsif id_token_info["nonce"] != session["omniauth.nonce"]
+      return(fail! :nonce_mismatch, StandardError.new("Nonce claim did not match the session"))
+    elsif [*id_token_info["aud"]].length > 1 && !options.client_ids.include(id_token_info["azp"])
       # If the ID Token contains multiple audiences, the Tool SHOULD verify that an azp Claim is present;
       # If an azp (authorized party) Claim is present, the Tool SHOULD verify that its client_id is the Claim's value;
       return(
         fail! :azp_mismatch,
               StandardError.new(
-                "azp claim invalid. Expected one of #{options.client_ids.join(',')}, received #{id_token_info['azp']}"
+                "azp claim invalid. Expected one of #{options.client_ids.join(",")}, received #{id_token_info["azp"]}",
               )
       )
     end
@@ -199,19 +178,20 @@ class DiscourseLti::LtiOmniauthStrategy
   end
 
   def cross_site_post?
-    request.request_method.downcase.to_sym == :post &&
-      request.params['samesite'].nil?
+    request.request_method.downcase.to_sym == :post && request.params["samesite"].nil?
   end
 
   def resubmit_as_samesite(*params)
     form_fields =
-      params.filter_map do |param_name|
-        next if request.params[param_name.to_s].nil?
-        escaped_value = Rack::Utils.escape_html request.params[param_name.to_s]
-        "<input type='hidden' name='#{param_name}' value='#{escaped_value}'/>"
-      end.join("\n")
+      params
+        .filter_map do |param_name|
+          next if request.params[param_name.to_s].nil?
+          escaped_value = Rack::Utils.escape_html request.params[param_name.to_s]
+          "<input type='hidden' name='#{param_name}' value='#{escaped_value}'/>"
+        end
+        .join("\n")
 
-    script_path = '/plugins/discourse-lti/javascripts/submit-on-load-lti.js'
+    script_path = "/plugins/discourse-lti/javascripts/submit-on-load-lti.js"
     html = <<~HTML
       <html>
         <head>
@@ -235,24 +215,24 @@ class DiscourseLti::LtiOmniauthStrategy
   end
 
   def id_token_info
-    @id_token_info ||= decode_token(request.params['id_token'])
+    @id_token_info ||= decode_token(request.params["id_token"])
   end
 
   def decode_token(token)
     payload, header =
       ::JWT.decode(
-        request.params['id_token'],
+        request.params["id_token"],
         public_key,
         true,
         {
-          algorithm: 'RS256',
+          algorithm: "RS256",
           verify_expiration: true,
           verify_not_before: true,
           iss: options.platform_issuer_id,
           verify_iss: true,
           aud: options.client_ids,
-          verify_aud: true
-        }
+          verify_aud: true,
+        },
       )
 
     payload
@@ -260,7 +240,7 @@ class DiscourseLti::LtiOmniauthStrategy
 
   def raw_public_key
     raw = options.platform_public_key
-    if raw.start_with?('-----BEGIN')
+    if raw.start_with?("-----BEGIN")
       raw
     else
       "-----BEGIN PUBLIC KEY-----\n#{raw}\n-----END PUBLIC KEY-----"
@@ -271,20 +251,20 @@ class DiscourseLti::LtiOmniauthStrategy
     @public_key ||= OpenSSL::PKey::RSA.new raw_public_key
   end
 
-  uid { id_token_info['sub'] }
+  uid { id_token_info["sub"] }
 
   info do
     {
-      name: id_token_info['name'],
-      email: id_token_info['email'],
-      first_name: id_token_info['given_name'],
-      last_name: id_token_info['family_name'],
-      nickname: id_token_info['preferred_username'],
-      image: id_token_info['picture']
+      name: id_token_info["name"],
+      email: id_token_info["email"],
+      first_name: id_token_info["given_name"],
+      last_name: id_token_info["family_name"],
+      nickname: id_token_info["preferred_username"],
+      image: id_token_info["picture"],
     }
   end
 
-  extra { { raw_info: id_token_info, id_token: request.params['id_token'] } }
+  extra { { raw_info: id_token_info, id_token: request.params["id_token"] } }
 
   def callback_url
     full_host + script_name + callback_path
