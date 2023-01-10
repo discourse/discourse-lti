@@ -5,3 +5,8 @@
 # https://translate.discourse.org/
 
 tr_TR:
+  js:
+    login:
+      lti:
+        name: "LTI"
+        title: "LTI ile"
