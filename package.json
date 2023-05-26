@@ -6,7 +6,6 @@
   "license": "MIT",
   "devDependencies": {
     "@prettier/plugin-ruby": "^1.5.5",
-    "eslint-config-discourse": "^3.3.0",
-    "prettier": "^2.3.0"
+"eslint-config-discourse": "^3.4.0"    "prettier": "^2.3.0"
   }
 }
