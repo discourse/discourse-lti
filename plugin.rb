@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 # name: discourse-lti
-# about: Add support for login via LTI 1.3
+# about: Allows login integration with a number of learning management systems via the LTI 1.3 standard.
+# meta_topic_id: 196174
 # version: 1.0
 # authors: David Taylor
 # url: https://github.com/discourse/discourse-lti
