@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # name: discourse-lti
-# about: Allows login integration with a number of learning management systems via the LTI 1.3 standard.  
+# about: Allows login integration with a number of learning management systems via the LTI 1.3 standard.
 # meta_topic_id: 196174
 # version: 1.0
 # authors: David Taylor
