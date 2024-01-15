@@ -6,7 +6,6 @@
 # version: 1.0
 # authors: David Taylor
 # url: https://github.com/discourse/discourse-lti
-# transpile_js: true
 
 enabled_site_setting :lti_enabled
 
