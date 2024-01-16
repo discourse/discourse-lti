@@ -1,6 +1,6 @@
 import { apiInitializer } from "discourse/lib/api";
-import discourseComputed from "discourse-common/utils/decorators";
 import { findAll } from "discourse/models/login-method";
+import discourseComputed from "discourse-common/utils/decorators";
 
 export default apiInitializer("0.8", (api) => {
   // LTI login must be initiated by the IdP
