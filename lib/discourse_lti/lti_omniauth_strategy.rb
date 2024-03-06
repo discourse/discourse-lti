@@ -191,11 +191,13 @@ class DiscourseLti::LtiOmniauthStrategy
         end
         .join("\n")
 
+    response_headers = {}
+
     script_path = "/plugins/discourse-lti/javascripts/submit-on-load-lti.js"
     html = <<~HTML
       <html>
         <head>
-          <script src="#{UrlHelper.absolute(script_path, GlobalSetting.cdn_url)}"></script>
+          <script src="#{UrlHelper.absolute(script_path, GlobalSetting.cdn_url)}" nonce="#{ContentSecurityPolicy.try(:nonce_placeholder, response_headers)}"></script>
         </head>
         <body>
           <form method="post">
@@ -209,8 +211,7 @@ class DiscourseLti::LtiOmniauthStrategy
       </html>
     HTML
 
-    r = Rack::Response.new
-    r.write html
+    r = Rack::Response.new(html, 200, response_headers)
     r.finish
   end
 
