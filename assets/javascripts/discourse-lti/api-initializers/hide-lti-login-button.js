@@ -11,7 +11,7 @@ export default apiInitializer("0.8", (api) => {
       class extends Superclass {
         @discourseComputed
         buttons() {
-          return super.buttons().filter((m) => m.name !== "lti");
+          return super.buttons.filter((m) => m.name !== "lti");
         }
       }
   );
