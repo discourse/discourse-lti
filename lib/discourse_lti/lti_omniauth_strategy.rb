@@ -191,7 +191,7 @@ class DiscourseLti::LtiOmniauthStrategy
         end
         .join("\n")
 
-    response_headers = {}
+    response_headers = { "Content-Type" => "text/html; charset=UTF-8" }
 
     script_path = "/plugins/discourse-lti/javascripts/submit-on-load-lti.js"
     html = <<~HTML
