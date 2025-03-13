@@ -54,6 +54,7 @@ describe "LTI Plugin" do
       # will be sent by the browser
       post "/auth/lti/initiate", params: init_params
       expect(response.status).to eq(200)
+      expect(response.headers["Content-Type"]).to eq("text/html; charset=UTF-8")
       expect(response.body).to include '<form method="post">',
               "<input type='hidden' name='samesite' value='true'/>",
               "<input type='hidden' name='iss' value='#{Rack::Utils.escape_html(platform_issuer_id)}'/>",
@@ -125,6 +126,7 @@ describe "LTI Plugin" do
     it "converts cross-site POST to same-site POST" do
       post "/auth/lti/callback", params: callback_params
       expect(response.status).to eq(200)
+      expect(response.headers["Content-Type"]).to eq("text/html; charset=UTF-8")
       expect(response.body).to include '<form method="post">',
               "<input type='hidden' name='samesite' value='true'/>",
               "<input type='hidden' name='id_token' value='#{Rack::Utils.escape_html(id_token)}'/>",
